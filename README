@@ -1,6 +1,9 @@
 Export bitmemo DB to Evernote archive.
 Only tested on Mac OSX 10.6.6
 
+USAGE
+./bitmemo2evernote <MEMONAME>
+
 Contact
 Eiji Araki <eiji.araki@gmail.com>
 http://twitter.com/eijiaraki

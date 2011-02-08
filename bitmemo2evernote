@@ -1,6 +1,11 @@
 #!/bin/sh
-SQLCMD="sqlite3 ${HOME}/Library/BitMemo/${1}.memo"
-echo $SQLCMD;
+if [ $# -le 0 ]; then
+	DB="Generic";
+else
+	DB=$1
+fi;
+
+SQLCMD="sqlite3 ${HOME}/Library/BitMemo/${DB}.memo"
 TOTAL=`echo "SELECT COUNT(*) FROM ZMEMO;" | $SQLCMD`;
 if [ $TOTAL -gt 0 ]; then
 	echo "Exporting $TOTAL notes...";
