@@ -1,0 +1,29 @@
+#!/bin/sh
+SQLCMD="sqlite3 ${HOME}/Library/BitMemo/${1}.memo"
+echo $SQLCMD;
+TOTAL=`echo "SELECT COUNT(*) FROM ZMEMO;" | $SQLCMD`;
+if [ $TOTAL -gt 0 ]; then
+	echo "Exporting $TOTAL notes...";
+	for i in `jot - 0 ${TOTAL}`; do
+		TITLE=`echo "select ZTITLE from ZMEMO limit ${i},1;" | $SQLCMD`;
+		CONTENT=`echo "select ZCONTENT from ZMEMO limit ${i},1;" | $SQLCMD | php -r "echo preg_replace(\"/\n/m\", '<br/>', file_get_contents('php://stdin'));"`
+		CREATED=`echo "SELECT ZCREATEDDATE FROM ZMEMO limit ${i},1;" | $SQLCMD | php -r "echo @date('Ymd\THis\Z', @strtotime('2001-01-01') + file_get_contents('php://stdin'));"`
+		EXPORT=`date +%Y%m%dT%H%M%SZ`
+		HEADER='<?xml version="1.0" encoding="UTF-8"?>
+		<!DOCTYPE en-export SYSTEM "http://xml.evernote.com/pub/evernote-export.dtd">
+		<en-export export-date="'$EXPORT'" application="Evernote" version="Evernote Mac 2.0 (116546)">
+		<note><title>'$TITLE'</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+		<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+		<en-note style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;">
+		'
+		FOOTER='
+		</en-note>
+		]]></content><created>'$CREATED'</created><updated>'$CREATED'</updated><note-attributes/></note>
+		</en-export>'
+		CONTENT=`echo $HEADER "\n" $CONTENT "\n" $FOOTER`
+		echo $CONTENT > ${TITLE}.enex
+		echo ${TITLE}
+	done;
+else
+	echo "no records"
+fi;
